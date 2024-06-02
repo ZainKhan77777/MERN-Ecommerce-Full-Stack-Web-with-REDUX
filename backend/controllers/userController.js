@@ -159,7 +159,7 @@ exports.resetPassword = catchAsyncErrors(
 
 
 
-// Get user Details
+// Get user(yourself who is currently login) Details
 
 exports.getUserDetail= catchAsyncErrors(async (req,res,next)=>{
     const user = await User.findById(req.user.id);
@@ -192,3 +192,95 @@ exports.updatePassword = catchAsyncErrors(async (req,res,next)=>{
         sendToken(user,201,res)
 })
 
+
+
+
+// update user Profile
+
+exports.updateProfile = catchAsyncErrors(async (req,res,next)=>{
+
+    const newUserData = {
+        name:req.body.name,
+        email:req.body.email,
+    }
+
+    // we will clouldinary later
+
+    const user = await User.findByIdAndUpdate(req.user.id , newUserData , {
+        new:true,
+        runValidators: true,
+        useFindAndModify: false,
+    });
+
+    res.status(200).json({
+            success:true,
+        });
+
+})
+
+
+//  Get all Users details(admin)
+exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
+    const users = await User.find();
+  
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  });
+
+
+ //  Get Single User details(admin) 
+ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+  
+    if (!user) {
+      return next(
+        new ErrorHander(`User does not exist with Id: ${req.params.id}`)
+      );
+    }
+  
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  });
+
+
+
+// update User Role -- Admin
+exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
+    const newUserData = {
+      name: req.body.name,
+      email: req.body.email,
+      role: req.body.role,
+    };
+  
+    await User.findByIdAndUpdate(req.params.id, newUserData, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    });
+  
+    res.status(200).json({
+      success: true,
+    });
+  });
+  
+  // Delete User --Admin
+  exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+  
+    if (!user) {
+      return next(
+        new ErrorHander(`User does not exist with Id: ${req.params.id}`, 400)
+      );
+    }
+   
+    await user.deleteOne();
+  
+    res.status(200).json({
+      success: true,
+      message: "User Deleted Successfully",
+    });
+  });
